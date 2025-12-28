@@ -1,0 +1,57 @@
+{
+    "typedocOptions": {
+        "out": "docs"
+    },
+    // Visit https://aka.ms/tsconfig to read more about this file
+    "compilerOptions": {
+        // File Layout
+        "rootDir": "./src/ts/main",
+        "outDir": "./dist/js",
+        // Environment Settings
+        // See also https://aka.ms/tsconfig/module
+        "module": "nodenext",
+        "target": "esnext",
+        //"types": [],
+        // For nodejs:
+        "lib": [
+            "esnext"
+        ],
+        "types": [
+            "node", "jasmine"
+        ],
+        // and npm install -D @types/node
+        // Other Outputs
+        "sourceMap": true,
+        "declaration": true,
+        "declarationMap": true,
+        // Stricter Typechecking Options
+        "noUncheckedIndexedAccess": true,
+        "exactOptionalPropertyTypes": true,
+        // Style Options
+        "noImplicitReturns": true,
+        "noImplicitOverride": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": false,
+        "noFallthroughCasesInSwitch": true,
+        // "noPropertyAccessFromIndexSignature": true,
+        // Recommended Options
+        "strict": true,
+        "jsx": "react-jsx",
+        "rewriteRelativeImportExtensions": true,
+        "verbatimModuleSyntax": true,
+        "isolatedModules": true,
+        "noUncheckedSideEffectImports": true,
+        "moduleDetection": "force",
+        "skipLibCheck": true,
+    },
+    "include": [
+        "src/ts/main/**/*.ts"
+    ],
+    "exclude": [
+        "ts-spec/**/*.spec.ts",
+        "ts-spec/**/*.Spec.ts",
+        "ts-spec/**/*.test.ts",
+        "ts-spec/**/*.Test.ts",
+        "node_modules"
+    ]
+}
