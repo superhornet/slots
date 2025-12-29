@@ -6,10 +6,12 @@ console.log("Let's go Gambling");
 console.info("🍒🍋🍀🔔💎🏆🎰🧨💡");
 const rl = readlinePromises.createInterface({
     input: process.stdin,
-    output: process.stdout
+    //output:process.stdout,
+    terminal: true
 });
 MenuDisplay.Display()
 const slotMachine = new SlotMachine();
+
 rl.on('line',(line)=>{
     slotMachine.lastEntry = line;
 
