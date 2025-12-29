@@ -1,6 +1,6 @@
 {
     "entryPoints": [
-        "src/ts/main/index.ts"
+        "src/main/ts/index.ts"
     ],
     "out": "docs",
     "excludePrivate": false,
