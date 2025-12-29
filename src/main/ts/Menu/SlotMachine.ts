@@ -1,14 +1,20 @@
-import { DistributionEnum, IntegerSet } from "../IntegerSet.ts";
+import { DistributionEnum, IntegerSet as NumberSet } from "../NumberSet.ts";
 import { RandomNumber, RNGenum } from "../RandomNumber.ts";
 interface ITile {
-    baseValue: number
-    chance: number
+    baseValue: number,
+    chance: number,
     icon: string,
     name: string,
     value: number,
 }
 interface IIcon {
     icons: Array<ITile>
+}
+type IProbTable = {
+    index: number,
+    icon: string,
+    min: number,
+    max: number
 }
 export class SlotMachine {
     private _wheels: number
@@ -80,22 +86,66 @@ export class SlotMachine {
             icon: "💡",
         }]
     };
+    private _probTable!: Array<IProbTable>;
     constructor(wheels: number = 5) {
         this._wheels = wheels;
         this.lastEntry = "";
         const dangerChance = this.icons.icons.at(7)?.chance;
         this.dangerProbability = (dangerChance as number) * 3;
+        this.calcProbTable();
+    }
+    /**
+     * calcProbTable
+    */
+    public calcProbTable() {
+        const icons = this.icons.icons;
+
+        const probTable: Array<IProbTable> = [];
+        let accumulator = 0;
+        icons.forEach(i => {
+            probTable.push({
+                index: i.value,
+                icon: i.icon,
+                min: accumulator,
+                max: (accumulator += i.chance)
+            });
+        });
+        this.probTable = probTable;
+    }
+    /**
+     * floatToTile
+    */
+    public floatToTile(val: number): string | undefined {
+        const probs: Array<IProbTable> = this.probTable;
+
+        const filtered = probs.filter((e) => {
+            return (val <= e.max) && (val > e.min)
+        });
+
+        return (filtered[0]?.icon)
+    }
+    /**
+     * floatToIndex
+    */
+    public floatToIndex(val: number): number | undefined {
+        const probs: Array<IProbTable> = this.probTable;
+
+        const filtered = probs.filter((e) => {
+            return (val <= e.max) && (val > e.min)
+        });
+
+        return (filtered[0]?.index)
     }
     /**
      * inDanger
     */
     public inDanger(): boolean {
         const dangerDecimal: number = new RandomNumber(RNGenum.FP).rngValue as number;
-        return ( dangerDecimal < this.dangerProbability)?true:false;
+        return (dangerDecimal < this.dangerProbability) ? true : false;
     }
     /**
      * howLucky
-     */
+    */
     public howLucky(): number {
         const luck: number = new RandomNumber(RNGenum.INT, 15).rngValue as number;
         return luck;
@@ -112,10 +162,10 @@ export class SlotMachine {
 
             const wheel: Array<ITile> = [];
             while (wheel.length < wheel_size) {
-                const intSet = new IntegerSet(wheel_size, DistributionEnum.RAND, 3.5).numbers;
-                intSet.forEach(element => {
-                    if (Number.isInteger(element) && Number.isFinite(element))
-                        wheel.push(this.icons.icons[element - 1] as ITile)
+                const floatSet = new NumberSet(wheel_size, DistributionEnum.RAND).numbers;
+                floatSet.forEach(element => {
+                    if (!Number.isInteger(element) && Number.isFinite(element))
+                        wheel.push(this.icons.icons[this.floatToIndex(element) as number - 1] as ITile)
                 });
             }
             slotMachine.push(wheel as Array<ITile>);
@@ -123,10 +173,10 @@ export class SlotMachine {
         }
         console.log(`Lucky: ${this.howLucky()}`);
         console.log(`${slotMachine.at(4)?.at(0)?.icon} ${slotMachine.at(3)?.at(0)?.icon} ${slotMachine.at(2)?.at(0)?.icon} ${slotMachine.at(1)?.at(0)?.icon} ${slotMachine.at(0)?.at(0)?.icon}`)
-        if(this.inDanger()){
-        console.log(`${slotMachine.at(4)?.at(1)?.icon} 🧨 🧨 🧨 ${slotMachine.at(0)?.at(1)?.icon}`)
-        }else{
-        console.log(`${slotMachine.at(4)?.at(1)?.icon} ${slotMachine.at(3)?.at(1)?.icon} ${slotMachine.at(2)?.at(1)?.icon} ${slotMachine.at(1)?.at(1)?.icon} ${slotMachine.at(0)?.at(1)?.icon}`)
+        if (this.inDanger()) {
+            console.log(`${slotMachine.at(4)?.at(1)?.icon} 🧨 🧨 🧨 ${slotMachine.at(0)?.at(1)?.icon}`)
+        } else {
+            console.log(`${slotMachine.at(4)?.at(1)?.icon} ${slotMachine.at(3)?.at(1)?.icon} ${slotMachine.at(2)?.at(1)?.icon} ${slotMachine.at(1)?.at(1)?.icon} ${slotMachine.at(0)?.at(1)?.icon}`)
         }
         console.log(`${slotMachine.at(4)?.at(2)?.icon} ${slotMachine.at(3)?.at(2)?.icon} ${slotMachine.at(2)?.at(2)?.icon} ${slotMachine.at(1)?.at(2)?.icon} ${slotMachine.at(0)?.at(2)?.icon}`)
         console.log('Again!!!');
@@ -134,28 +184,28 @@ export class SlotMachine {
     }
     /**
      * showValues
-     */
+    */
     public showValues() {
         const icons = this.icons.icons;
         let buffer: string = '';
         icons.forEach(icon => {
             if (icon.value <= 7) {
                 buffer += `${icon.icon} ${icon.baseValue}🪙  `;
-                if(icon.value % 3 === 0){ buffer += '\n';}
+                if (icon.value % 3 === 0) { buffer += '\n'; }
             }
         });
         console.log(buffer);
     }
     /**
      * showChance
-     */
+    */
     public showChance() {
         const icons = this.icons.icons;
         let accumulator = 0;
         //console.log(`🧨 (${accumulator}, ${this.dangerProbability})`);
         //accumulator+=this.dangerProbability;
         icons.forEach(icon => {
-            console.log(`${icon.icon} (${accumulator}, ${accumulator+=icon.chance})`);
+            console.log(`${icon.icon} (${accumulator}, ${accumulator += icon.chance})`);
         });
     }
     /**
@@ -175,6 +225,12 @@ export class SlotMachine {
             case "4":
                 process.exit();
             // eslint-disable-next-line no-fallthrough
+            case "5":
+                {
+                    const n = new RandomNumber(RNGenum.FP).rngValue as number;
+                    console.log(`${n} ${this.floatToTile(n)}`);
+                }
+                break;
             default:
                 break;
         }
@@ -202,5 +258,11 @@ export class SlotMachine {
     }
     public set dangerProbability(value: number) {
         this._dangerProbability = value;
+    }
+    public get probTable(): Array<IProbTable> {
+        return this._probTable;
+    }
+    public set probTable(value: Array<IProbTable>) {
+        this._probTable = value;
     }
 }

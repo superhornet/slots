@@ -13,6 +13,7 @@ MenuDisplay.Display()
 const slotMachine = new SlotMachine();
 
 rl.on('line',(line)=>{
+    if(line !== '')
     slotMachine.lastEntry = line;
 
     slotMachine.processInput();
